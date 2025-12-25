@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Oracle Login Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    input {
+      padding: 8px;
+      margin: 5px 0;
+      width: 250px;
+    }
+    button {
+      padding: 8px 16px;
+      margin-top: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 20px;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🔐 Test Oracle Login</h2>
+
+  <div>
+    <label>Oracle Username</label><br />
+    <input type="text" id="username" placeholder="VD: hr_n5" />
+  </div>
+
+  <div>
+    <label>Oracle Password</label><br />
+    <input type="password" id="password" placeholder="******" />
+  </div>
+
+  <button onclick="login()">Login & Load Employees</button>
+
+  <div id="error" class="error"></div>
+
+  <table id="resultTable" style="display:none">
+    <thead>
+      <tr>
+        <th>EMP_ID</th>
+        <th>EMP_NAME</th>
+        <th>BIRTH_DATE</th>
+        <th>EMAIL</th>
+        <th>DEPT_ID</th>
+        <th>SALARY</th>
+        <th>TAX_CODE</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      document.getElementById('error').innerText = '';
+      document.getElementById('resultTable').style.display = 'none';
+
+      try {
+        const res = await fetch('http://localhost:3000/api/employees', {
+          method: 'GET',
+          headers: {
+            'username': username,
+            'password': password
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error('Login failed');
+        }
+
+        const data = await res.json();
+        renderTable(data);
+
+      } catch (err) {
+        document.getElementById('error').innerText =
+          '❌ Đăng nhập Oracle thất bại (sai user/pass hoặc không đủ quyền)';
+      }
+    }
+
+    function renderTable(rows) {
+      const tbody = document.querySelector('#resultTable tbody');
+      tbody.innerHTML = '';
+
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.EMP_ID}</td>
+          <td>${r.EMP_NAME}</td>
+          <td>${r.BIRTH_DATE}</td>
+          <td>${r.EMAIL}</td>
+          <td>${r.DEPT_ID}</td>
+          <td>${r.SALARY}</td>
+          <td>${r.TAX_CODE}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('resultTable').style.display = 'table';
+    }
+  </script>
+
+</body>
+</html>
