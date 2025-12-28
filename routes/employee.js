@@ -1,14 +1,18 @@
+// routes/employee.js
 const express = require('express');
 const router = express.Router();
+const { getAdminConnection } = require('../db/oracleAdmin');
 
+/* ===============================
+   GET EMPLOYEES
+================================ */
 router.get('/', async (req, res) => {
   const conn = req.db;
 
   try {
     const result = await conn.execute(
       `
-      SELECT
-       *
+      SELECT *
       FROM hr_n5.employees
       ORDER BY emp_id
       `,
@@ -22,11 +26,8 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Query failed' });
   } finally {
     if (conn) {
-      try {
-        await conn.close();
-      } catch (e) {}
+      try { await conn.close(); } catch {}
     }
   }
 });
-
 module.exports = router;
