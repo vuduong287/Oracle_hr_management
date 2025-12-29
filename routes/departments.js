@@ -24,19 +24,36 @@ function getUserLabelsByDept(dept, isManager = false) {
   }
 }
 
-/* ===============================
-   NORMALIZE USERNAME
-=============================== */
-function normalizeUsername(fullName, empId) {
-  const noAccent = fullName
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D');
+router.get('/', async (req, res) => {
+  const userConn = req.db;
 
-  return `${noAccent.toLowerCase().replace(/[^a-z0-9]/g, '')}_${empId}`;
-}
+  try {
+    const rs = await userConn.execute(
+      `
+      SELECT
+        dept_id,
+        dept_name,
+        manager_id
+      FROM hr_n5.departments
+      ORDER BY dept_id
+      `,
+      [],
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
 
+    res.json({
+      count: rs.rows.length,
+      departments: rs.rows
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: 'Failed to fetch departments',
+      error: err.message
+    });
+  }
+});
 /* ===============================
    UPDATE MANAGER + USER LABEL
 =============================== */
@@ -68,6 +85,7 @@ router.put('/:dept_id/manager', async (req, res) => {
       { m: new_manager_id, d: dept_id },
       { autoCommit: false }
     );
+    
 
     if (upd.rowsAffected !== 1) {
       await userConn.rollback();
@@ -83,7 +101,7 @@ router.put('/:dept_id/manager', async (req, res) => {
       );
 
       if (rs.rows.length === 1) {
-        const u = normalizeUsername(rs.rows[0].FULL_NAME, old_manager_id);
+        const u = 'N5_' + old_manager_id;
         const l = getUserLabelsByDept(dept_id, false);
 
         await OLSConn.execute(
@@ -113,7 +131,7 @@ router.put('/:dept_id/manager', async (req, res) => {
       return res.status(400).json({ message: 'New manager not found' });
     }
 
-    const newUser = normalizeUsername(newRs.rows[0].FULL_NAME, new_manager_id);
+    const newUser = 'N5_' + new_manager_id;
     const newLabel = getUserLabelsByDept(dept_id, true);
 
     await OLSConn.execute(

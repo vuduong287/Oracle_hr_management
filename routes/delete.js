@@ -1,24 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { getHRN5Connection } = require('../db/oracleAdmin');
-
+const oracledb = require('oracledb');
 /* ===============================
    HELPER: normalize username
    (PHẢI GIỐNG LÚC CREATE)
 ================================ */
-function normalizeUsername(fullName, empId) {
-  const noAccent = fullName
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D');
 
-  const clean = noAccent
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
-
-  return `${clean}_${empId}`;
-}
 
 /* ===============================
    DELETE EMPLOYEE + DROP USER
@@ -40,7 +28,8 @@ router.delete('/:emp_id', async (req, res) => {
       FROM hr_n5.employees
       WHERE emp_id = :id
       `,
-      { id: emp_id }
+      { id: emp_id },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
 
     if (result.rows.length === 0) {
@@ -49,8 +38,9 @@ router.delete('/:emp_id', async (req, res) => {
       });
     }
 
-    const full_name = result.rows[0][1];
-    const oracle_username = normalizeUsername(full_name, emp_id);
+    const full_name = result.rows[0].FULL_NAME;
+
+    const oracle_username = 'N5_' + emp_id;
 
     /* ===============================
        (2) Xóa dữ liệu employee

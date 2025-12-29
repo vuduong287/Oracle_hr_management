@@ -35,23 +35,7 @@ function getUserLabelsByDept(dept) {
   }
 }
 
-/* =================================================
-   Normalize Oracle username
-   (PHẢI giống CREATE / DELETE)
-================================================= */
-function normalizeUsername(fullName, empId) {
-  const noAccent = fullName
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D');
 
-  const clean = noAccent
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
-
-  return `${clean}_${empId}`;
-}
 
 /* =================================================
    UPDATE EMPLOYEE
@@ -114,6 +98,14 @@ router.put('/:emp_id', async (req, res) => {
         message: 'Cannot update employee because this employee is currently a department manager'
       });
     }
+    // dob từ frontend
+    let dobValue = dob;
+
+    // Nếu là ISO string -> cắt YYYY-MM-DD
+    if (typeof dob === "string" && dob.includes("T")) {
+      dobValue = dob.substring(0, 10); // "1995-03-08"
+}
+
 
     /* =================================================
        (3) UPDATE TẤT CẢ FIELD
@@ -128,7 +120,7 @@ router.put('/:emp_id', async (req, res) => {
         dept_id   = NVL(:dept_id, dept_id),
         salary    = NVL(:salary, salary),
         tax_code  = NVL(:tax_code, tax_code)
-      WHERE emp_id = :id
+      WHERE emp_id = :id  
       `,
       {
         full_name,
@@ -153,7 +145,7 @@ router.put('/:emp_id', async (req, res) => {
         dept_id &&
         dept_id !== oldDept) {
 
-      const oracleUser = normalizeUsername(oldName, emp_id);
+      const oracleUser = 'N5_' + emp_id;
       const labels = getUserLabelsByDept(dept_id);
 
     

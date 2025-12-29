@@ -1,212 +1,1785 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Oracle Employee Management</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    input, select { padding: 8px; margin: 5px 0; width: 260px; }
-    button { padding: 8px 16px; margin-top: 10px; }
-    table { border-collapse: collapse; margin-top: 20px; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; }
-    th { background: #f0f0f0; }
-    tr:hover { background: #eaf2ff; cursor: pointer; }
-    .box { border: 1px solid #ccc; padding: 15px; margin-top: 20px; width: 480px; }
-    .error { color: red; margin-top: 10px; }
-    .success { color: green; margin-top: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oracle Employee Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --border: #e2e8f0;
+            --card-bg: #ffffff;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background-color: var(--sidebar-hover);
+            color: white;
+        }
+
+        .nav-item.active {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: white;
+            border-left-color: var(--primary);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .user-details h4 {
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .user-details p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            width: 300px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-bar input {
+            border: none;
+            outline: none;
+            flex: 1;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .search-bar button {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            cursor: pointer;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.blue {
+            background-color: var(--primary);
+        }
+
+        .stat-icon.green {
+            background-color: var(--success);
+        }
+
+        .stat-icon.orange {
+            background-color: var(--warning);
+        }
+
+        .stat-icon.red {
+            background-color: var(--danger);
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-info p {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Login Container */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        /* Table */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--dark);
+        }
+
+        .btn-outline:hover {
+            background-color: #f8fafc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            background-color: #f8fafc;
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .employee-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar-small {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-primary {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background-color: transparent;
+            color: var(--secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: #f1f5f9;
+        }
+
+        .action-btn.edit:hover {
+            color: var(--primary);
+        }
+
+        .action-btn.delete:hover {
+            color: var(--danger);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: modalFadeIn 0.3s;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--secondary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-control:disabled {
+            background-color: #f8fafc;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            color: var(--secondary);
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            .search-bar {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Login Screen (Initial) -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <h2><i class="fas fa-database"></i> Oracle Employee System</h2>
+            <div class="form-group">
+                <label for="username">Oracle Username</label>
+                <input type="text" id="username" class="form-control" placeholder="nhập username">
+                <small class="text-muted">Ví dụ: N5_101</small>
+            </div>
+            <div class="form-group">
+                <label for="password">Oracle Password</label>
+                <input type="password" id="password" class="form-control" placeholder="nhập password">
+            </div>
+            <div id="loginError" class="alert-error" style="display: none;"></div>
+            <button id="btnLogin" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+            </button>
+            <div style="margin-top: 1.5rem; text-align: center; color: var(--secondary); font-size: 0.85rem;">
+                <p><i class="fas fa-info-circle"></i> Hệ thống sử dụng Oracle OLS/VPD</p>
+                <p>Bạn chỉ xem được dữ liệu theo phân quyền department</p>
+            </div>
+        </div>
+    </div>
 
-<h2>🔐 Oracle Login</h2>
-<div class="box">
-  <input type="text" id="login_username" placeholder="Oracle username" /><br />
-  <input type="password" id="login_password" placeholder="Oracle password" /><br />
-  <button onclick="login()">Login & Load Employees</button>
-  <div id="loginError" class="error"></div>
-</div>
+    <!-- Main App (Hidden until login) -->
+    <div id="appContainer" class="app-container" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1><i class="fas fa-database"></i> <span>Oracle</span>HR</h1>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-page="departments">
+                    <i class="fas fa-building"></i> Phòng ban
+                </a>
+                <a href="#" class="nav-item" data-page="add">
+                    <i class="fas fa-user-plus"></i> Thêm nhân viên
+                </a>
+            </div>
+            <div class="user-info">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <h4 id="currentUser">Chưa đăng nhập</h4>
+                        <p id="userDept">Oracle User</p>
+                    </div>
+                </div>
+                <button class="logout-btn" id="btnLogout" title="Đăng xuất">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
 
-<!-- ================= INSERT ================= -->
-<h2>➕ Create Employee</h2>
-<div class="box">
-  <input type="number" id="c_emp_id" placeholder="Employee ID (3 digits)" /><br />
-  <input type="text" id="c_full_name" placeholder="Full name" /><br />
-  <input type="date" id="c_dob" /><br />
-  <input type="email" id="c_email" placeholder="Email" /><br />
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h2 id="pageTitle">Dashboard</h2>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm nhân viên...">
+                    <button id="btnSearch"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
 
-  <select id="c_dept">
-    <option value="IT">IT</option>
-    <option value="HR">HR</option>
-    <option value="ACCT">ACCT</option>
-  </select><br />
+            <!-- Dashboard Content -->
+            <div id="dashboardContent">
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalEmployees">0</h3>
+                            <p>Tổng nhân viên</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalDepartments">0</h3>
+                            <p>Phòng ban</p>
+                        </div>
+                    </div>
+                </div>
 
-  <input type="number" id="c_salary" placeholder="Salary" /><br />
-  <input type="text" id="c_tax_code" placeholder="Tax code" /><br />
-  <input type="password" id="c_oracle_password" placeholder="Oracle password (new user)" /><br />
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Danh sách nhân viên</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-outline" id="btnRefresh">
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                            <button class="btn btn-primary" onclick="openAddEmployeeModal()">
+                                <i class="fas fa-user-plus"></i> Thêm mới
+                            </button>
+                        </div>
+                    </div>
+                    <div class="loading" id="loadingEmployees">
+                        <div class="spinner"></div>
+                    </div>
+                    <table id="employeesTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên nhân viên</th>
+                                <th>Email</th>
+                                <th>Phòng ban</th>
+                                <th>Lương</th>
+                                <th>Ngày sinh</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeesTableBody">
+                            <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-  <button onclick="createEmployee()">Create Employee</button>
-  <div id="createMsg"></div>
-</div>
+            <!-- Departments Content -->
+            <div id="departmentsContent" style="display: none;">
+                <!-- Content will be loaded dynamically -->
+            </div>
 
-<!-- ================= UPDATE ================= -->
-<h2>✏️ Update Employee</h2>
-<div class="box">
-  <input type="number" id="u_emp_id" disabled /><br />
-  <input type="text" id="u_full_name" /><br />
-  <input type="date" id="u_dob" /><br />
-  <input type="email" id="u_email" /><br />
+            <!-- Add Employee Content -->
+            <div id="addEmployeeContent" style="display: none;">
+                <!-- Content for add employee page -->
+            </div>
+        </div>
+    </div>
 
-  <select id="u_dept">
-    <option value="IT">IT</option>
-    <option value="HR">HR</option>
-    <option value="ACCT">ACCT</option>
-  </select><br />
+    <!-- Modal for Add/Edit Employee -->
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Thêm nhân viên mới</h3>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="employeeForm">
+                    <div class="form-group">
+                        <label for="emp_id">Mã nhân viên (3 chữ số)</label>
+                        <input type="number" id="emp_id" class="form-control" min="100" max="999" required>
+                        <small>Mã nhân viên không thể thay đổi sau khi tạo</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="full_name">Họ và tên</label>
+                        <input type="text" id="full_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">Ngày sinh</label>
+                        <input type="date" id="dob" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dept">Phòng ban</label>
+                        <select id="dept" class="form-control" required>
+                            <option value="">Chọn phòng ban</option>
+                            <option value="IT">IT - Công nghệ thông tin</option>
+                            <option value="HR">HR - Nhân sự</option>
+                            <option value="ACCT">ACCT - Kế toán</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="salary">Lương</label>
+                        <input type="number" id="salary" class="form-control" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tax_code">Mã số thuế</label>
+                        <input type="text" id="tax_code" class="form-control" required>
+                    </div>
+                    <div class="form-group" id="passwordField">
+                        <label for="oracle_password">Mật khẩu Oracle</label>
+                        <input type="password" id="oracle_password" class="form-control">
+                        <small>Chỉ cần nhập khi tạo nhân viên mới</small>
+                    </div>
+                    <input type="hidden" id="formMode" value="add">
+                    <input type="hidden" id="currentEmpId" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelModal">Hủy</button>
+                <button class="btn btn-primary" id="saveEmployee">Lưu</button>
+            </div>
+        </div>
+    </div>
 
-  <input type="number" id="u_salary" /><br />
-  <input type="text" id="u_tax_code" /><br />
+    <!-- Modal for Delete Confirmation -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Xác nhận xóa</h3>
+                <button class="close-modal" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa nhân viên <strong id="deleteEmpName"></strong>?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Hành động này sẽ xóa cả tài khoản Oracle của nhân viên và không thể hoàn tác!</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelDelete">Hủy</button>
+                <button class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
 
-  <button onclick="updateEmployee()">Update Employee</button>
-  <div id="updateMsg"></div>
-</div>
+    <!-- Modal for Update Manager -->
+    <div id="managerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cập nhật trưởng phòng</h3>
+                <button class="close-modal" id="closeManagerModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="deptSelect">Phòng ban</label>
+                    <select id="deptSelect" class="form-control">
+                        <option value="">Chọn phòng ban</option>
+                        <option value="IT">IT - Công nghệ thông tin</option>
+                        <option value="HR">HR - Nhân sự</option>
+                        <option value="ACCT">ACCT - Kế toán</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="managerSelect">Chọn trưởng phòng mới</label>
+                    <select id="managerSelect" class="form-control">
+                        <!-- Options will be added by JS -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelManager">Hủy</button>
+                <button class="btn btn-primary" id="saveManager">Cập nhật</button>
+            </div>
+        </div>
+    </div>
 
-<!-- ================= TABLE ================= -->
-<table id="resultTable" style="display:none">
-  <thead>
-    <tr>
-      <th>EMP_ID</th>
-      <th>FULL_NAME</th>
-      <th>DOB</th>
-      <th>EMAIL</th>
-      <th>DEPT_ID</th>
-      <th>SALARY</th>
-      <th>TAX_CODE</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:3000/api';
+        let currentUser = null;
+        let employees = [];
+        let departments = [];
+        let employeeToDelete = null;
 
-<script>
-const API_BASE = 'http://localhost:3000/api/employees';
-let currentUser = null;
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const appContainer = document.getElementById('appContainer');
+        const btnLogin = document.getElementById('btnLogin');
+        const btnLogout = document.getElementById('btnLogout');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginError = document.getElementById('loginError');
+        const currentUserSpan = document.getElementById('currentUser');
+        const userDeptSpan = document.getElementById('userDept');
+        const userAvatar = document.getElementById('userAvatar');
+        const pageTitle = document.getElementById('pageTitle');
+        const totalEmployees = document.getElementById('totalEmployees');
+        const totalDepartments = document.getElementById('totalDepartments');
+        const employeesTable = document.getElementById('employeesTable');
+        const employeesTableBody = document.getElementById('employeesTableBody');
+        const loadingEmployees = document.getElementById('loadingEmployees');
+        const btnRefresh = document.getElementById('btnRefresh');
+        const searchInput = document.getElementById('searchInput');
+        const btnSearch = document.getElementById('btnSearch');
+        const employeeModal = document.getElementById('employeeModal');
+        const deleteModal = document.getElementById('deleteModal');
+        const managerModal = document.getElementById('managerModal');
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = {
+            dashboard: document.getElementById('dashboardContent'),
+            departments: document.getElementById('departmentsContent'),
+            add: document.getElementById('addEmployeeContent')
+        };
 
-/* ================= LOGIN ================= */
-async function login() {
-  try {
-    const res = await fetch(API_BASE, {
-      headers: {
-        username: login_username.value,
-        password: login_password.value
-      }
-    });
-    if (!res.ok) throw new Error();
-    currentUser = {
-      username: login_username.value,
-      password: login_password.value
-    };
-    renderTable(await res.json());
-  } catch {
-    loginError.innerText = '❌ Đăng nhập Oracle thất bại';
-  }
-}
+        // Event Listeners
+        btnLogin.addEventListener('click', handleLogin);
+        btnLogout.addEventListener('click', handleLogout);
+        btnRefresh.addEventListener('click', loadEmployees);
+        btnSearch.addEventListener('click', handleSearch);
+        document.getElementById('closeModal').addEventListener('click', () => hideModal(employeeModal));
+        document.getElementById('cancelModal').addEventListener('click', () => hideModal(employeeModal));
+        document.getElementById('saveEmployee').addEventListener('click', saveEmployee);
+        document.getElementById('closeDeleteModal').addEventListener('click', () => hideModal(deleteModal));
+        document.getElementById('cancelDelete').addEventListener('click', () => hideModal(deleteModal));
+        document.getElementById('confirmDelete').addEventListener('click', confirmDelete);
+        document.getElementById('closeManagerModal').addEventListener('click', () => hideModal(managerModal));
+        document.getElementById('cancelManager').addEventListener('click', () => hideModal(managerModal));
+        document.getElementById('saveManager').addEventListener('click', updateManager);
 
-/* ================= INSERT ================= */
-async function createEmployee() {
-  if (!currentUser) return alert('Login trước');
+        // Add event listeners for navigation
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                switchPage(page);
+            });
+        });
 
-  const body = {
-    emp_id: c_emp_id.value,
-    full_name: c_full_name.value,
-    dob: c_dob.value,
-    email: c_email.value,
-    dept: c_dept.value,
-    salary: c_salary.value,
-    tax_code: c_tax_code.value,
-    oracle_password: c_oracle_password.value
-  };
+        // Login handler
+        async function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
 
-  try {
-    const res = await fetch(`${API_BASE}/create`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        username: currentUser.username,
-        password: currentUser.password
-      },
-      body: JSON.stringify(body)
-    });
+            if (!username || !password) {
+                showError('Vui lòng nhập đầy đủ username và password');
+                return;
+            }
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+            btnLogin.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang đăng nhập...';
+            btnLogin.disabled = true;
 
-    createMsg.innerHTML = `<div class="success">✅ Created ${data.oracle_user}</div>`;
-    login();
-  } catch (e) {
-    createMsg.innerHTML = `<div class="error">❌ ${e.message}</div>`;
-  }
-}
+            try {
+                const response = await fetch(`${API_BASE}/employees`, {
+                    headers: {
+                        'username': username,
+                        'password': password
+                    }
+                });
 
-/* ================= TABLE ================= */
-function renderTable(rows) {
-  const tbody = document.querySelector('#resultTable tbody');
-  tbody.innerHTML = '';
-  rows.forEach(r => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.EMP_ID}</td>
-      <td>${r.FULL_NAME}</td>
-      <td>${r.DOB?.substring(0,10) || ''}</td>
-      <td>${r.EMAIL}</td>
-      <td>${r.DEPT_ID}</td>
-      <td>${r.SALARY}</td>
-      <td>${r.TAX_CODE}</td>`;
-    tr.onclick = () => fillForm(r);
-    tbody.appendChild(tr);
-  });
-  resultTable.style.display = 'table';
-}
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = {
+                        username: username,
+                        password: password
+                    };
+                    
+                    // Update UI
+                    currentUserSpan.textContent = username;
+                    userDeptSpan.textContent = 'Oracle User';
+                    userAvatar.textContent = username.charAt(0).toUpperCase();
+                    
+                    // Switch to app
+                    loginScreen.style.display = 'none';
+                    appContainer.style.display = 'flex';
+                    
+                    // Load initial data
+                    loadEmployees();
+                    loadDepartments();
+                } else {
+                    throw new Error('Đăng nhập thất bại');
+                }
+            } catch (error) {
+                showError('Sai username/password hoặc không có quyền truy cập');
+            } finally {
+                btnLogin.innerHTML = '<i class="fas fa-sign-in-alt"></i> Đăng nhập';
+                btnLogin.disabled = false;
+            }
+        }
 
-/* ================= FILL ================= */
-function fillForm(r) {
-  u_emp_id.value = r.EMP_ID;
-  u_full_name.value = r.FULL_NAME;
-  u_dob.value = r.DOB?.substring(0,10) || '';
-  u_email.value = r.EMAIL;
-  u_dept.value = r.DEPT_ID;
-  u_salary.value = r.SALARY;
-  u_tax_code.value = r.TAX_CODE;
-}
+        // Logout handler
+        function handleLogout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                // Reset all data
+                currentUser = null;
+                employees = [];
+                departments = [];
+                
+                // Reset UI
+                usernameInput.value = '';
+                passwordInput.value = '';
+                currentUserSpan.textContent = 'Chưa đăng nhập';
+                userDeptSpan.textContent = 'Oracle User';
+                userAvatar.textContent = 'U';
+                
+                // Switch to login screen
+                appContainer.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                
+                // Clear any alerts
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => alert.remove());
+            }
+        }
 
-/* ================= UPDATE ================= */
-async function updateEmployee() {
-  if (!currentUser) return alert('Login trước');
-  if (!u_emp_id.value) return alert('Chưa chọn nhân viên');
+        // Load employees
+        async function loadEmployees() {
+            if (!currentUser) return;
+            
+            loadingEmployees.style.display = 'flex';
+            employeesTable.style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_BASE}/employees`, {
+                    headers: {
+                        'username': currentUser.username,
+                        'password': currentUser.password
+                    }
+                });
 
-  const body = {
-    full_name: u_full_name.value,
-    dob: u_dob.value,
-    email: u_email.value,
-    dept_id: u_dept.value,
-    salary: u_salary.value,
-    tax_code: u_tax_code.value
-  };
+                if (response.ok) {
+                    employees = await response.json();
+                    renderEmployees(employees);
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Error loading employees:', error);
+                showAlert('Không thể tải danh sách nhân viên', 'error');
+            } finally {
+                loadingEmployees.style.display = 'none';
+                employeesTable.style.display = 'table';
+            }
+        }
 
-  const res = await fetch(`${API_BASE}/${u_emp_id.value}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      username: currentUser.username,
-      password: currentUser.password
-    },
-    body: JSON.stringify(body)
-  });
+        // Load departments
+        async function loadDepartments() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/departments`, {
+                    headers: {
+                        'username': currentUser.username,
+                        'password': currentUser.password
+                    }
+                });
 
-  updateMsg.innerHTML = res.ok
-    ? `<div class="success">✅ Update thành công</div>`
-    : `<div class="error">❌ Update thất bại</div>`;
+                if (response.ok) {
+                    const data = await response.json();
+                    departments = data.departments || [];
+                    totalDepartments.textContent = data.count || 0;
+                    
+                    // Update department page if it's active
+                    if (document.getElementById('departmentsContent').style.display === 'block') {
+                        renderDepartments(departments);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
 
-  login();
-}
-</script>
+        // Render employees table
+        function renderEmployees(employeesList) {
+            employeesTableBody.innerHTML = '';
+            
+            if (employeesList.length === 0) {
+                employeesTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-users-slash" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                            <p>Không có nhân viên nào</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            employeesList.forEach(emp => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${emp.EMP_ID}</strong></td>
+                    <td>
+                        <div class="employee-name">
+                            <div class="avatar-small">${emp.FULL_NAME.charAt(0)}</div>
+                            <div>
+                                <strong>${emp.FULL_NAME}</strong><br>
+                                <small>${emp.TAX_CODE || 'N/A'}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${emp.EMAIL}</td>
+                    <td>
+                        <span class="badge ${
+                            emp.DEPT_ID === 'IT' ? 'badge-info' : 
+                            emp.DEPT_ID === 'HR' ? 'badge-success' : 'badge-warning'
+                        }">
+                            ${emp.DEPT_ID}
+                        </span>
+                    </td>
+                    <td>${formatCurrency(emp.SALARY)}</td>
+                    <td>${emp.DOB ? emp.DOB.substring(0, 10) : 'N/A'}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="action-btn edit" onclick="editEmployee(${emp.EMP_ID})" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteEmployee(${emp.EMP_ID}, '${emp.FULL_NAME}')" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                employeesTableBody.appendChild(row);
+            });
+        }
 
+        // Render departments table
+        function renderDepartments(deptList) {
+            const content = pages.departments;
+            
+            if (deptList.length === 0) {
+                content.innerHTML = `
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Thông tin phòng ban</h3>
+                            <button class="btn btn-outline" onclick="loadDepartments()">
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                        </div>
+                        <div style="padding: 2rem; text-align: center;">
+                            <i class="fas fa-building" style="font-size: 3rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                            <p>Không có dữ liệu phòng ban</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Thông tin phòng ban</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-outline" onclick="loadDepartments()">
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                            <button class="btn btn-primary" onclick="showUpdateManagerModal()">
+                                <i class="fas fa-user-edit"></i> Cập nhật trưởng phòng
+                            </button>
+                        </div>
+                    </div>
+                    <div class="loading" id="loadingDepartments" style="display: none;">
+                        <div class="spinner"></div>
+                    </div>
+                    <table id="departmentsTable">
+                        <thead>
+                            <tr>
+                                <th>Mã phòng ban</th>
+                                <th>Tên phòng ban</th>
+                                <th>Trưởng phòng</th>
+                                <th>Số nhân viên</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departmentsTableBody">
+            `;
+            
+            // Count employees per department
+            const deptCounts = {};
+            employees.forEach(emp => {
+                deptCounts[emp.DEPT_ID] = (deptCounts[emp.DEPT_ID] || 0) + 1;
+            });
+            
+            deptList.forEach(dept => {
+                const employeeCount = deptCounts[dept.DEPT_ID] || 0;
+                const managerInfo = dept.MANAGER_ID ? 
+                    `<span class="badge badge-primary">${dept.MANAGER_ID}</span>` : 
+                    '<span class="badge badge-secondary">Chưa có</span>';
+                
+                html += `
+                    <tr>
+                        <td><strong>${dept.DEPT_ID}</strong></td>
+                        <td>${dept.DEPT_NAME || dept.DEPT_ID}</td>
+                        <td>${managerInfo}</td>
+                        <td>${employeeCount}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-container" style="margin-top: 2rem;">
+                    <div class="table-header">
+                        <h3>Thông tin OLS Labels</h3>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <p>Hệ thống phân quyền Oracle Label Security (OLS):</p>
+                        <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+                            <li><strong>Trưởng phòng HR:</strong> Có quyền đọc/ghi tất cả phòng ban</li>
+                            <li><strong>Nhân viên HR:</strong> Chỉ đọc được tất cả, ghi được IT & ACCT</li>
+                            <li><strong>Phòng IT:</strong> Chỉ xem và sửa dữ liệu IT</li>
+                            <li><strong>Phòng ACCT:</strong> Xem và sửa tất cả phòng ban</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+
+        // Update statistics
+        function updateStats() {
+            totalEmployees.textContent = employees.length;
+        }
+
+        // Switch between pages
+        function switchPage(page) {
+            // Update navigation
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-page') === page) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Hide all pages
+            Object.values(pages).forEach(pageEl => {
+                if (pageEl) pageEl.style.display = 'none';
+            });
+            
+            // Show selected page
+            if (pages[page]) {
+                pages[page].style.display = 'block';
+            }
+            
+            // Update title
+            const titles = {
+                dashboard: 'Dashboard',
+                departments: 'Quản lý phòng ban',
+                add: 'Thêm nhân viên mới'
+            };
+            pageTitle.textContent = titles[page] || 'Dashboard';
+            
+            // Load specific page content
+            if (page === 'departments') {
+                if (departments.length > 0) {
+                    renderDepartments(departments);
+                } else {
+                    loadDepartments();
+                }
+            } else if (page === 'add') {
+                showAddEmployeeForm();
+            }
+        }
+
+        // Show add employee form
+        function showAddEmployeeForm() {
+            const content = pages.add;
+            content.innerHTML = `
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Thêm nhân viên mới</h3>
+                        <button class="btn btn-outline" onclick="switchPage('dashboard')">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </button>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <form id="addEmployeeForm">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="add_emp_id">Mã nhân viên *</label>
+                                    <input type="number" id="add_emp_id" class="form-control" min="100" max="999" required>
+                                    <small>3 chữ số (ví dụ: 101)</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_full_name">Họ và tên *</label>
+                                    <input type="text" id="add_full_name" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_dob">Ngày sinh *</label>
+                                    <input type="date" id="add_dob" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_email">Email *</label>
+                                    <input type="email" id="add_email" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_dept">Phòng ban *</label>
+                                    <select id="add_dept" class="form-control" required>
+                                        <option value="">Chọn phòng ban</option>
+                                        <option value="IT">IT - Công nghệ thông tin</option>
+                                        <option value="HR">HR - Nhân sự</option>
+                                        <option value="ACCT">ACCT - Kế toán</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_salary">Lương *</label>
+                                    <input type="number" id="add_salary" class="form-control" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_tax_code">Mã số thuế *</label>
+                                    <input type="text" id="add_tax_code" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add_oracle_password">Mật khẩu Oracle *</label>
+                                    <input type="password" id="add_oracle_password" class="form-control" required>
+                                    <small>Sẽ dùng để tạo tài khoản Oracle cho nhân viên</small>
+                                </div>
+                            </div>
+                        </form>
+                        <div style="margin-top: 2rem; text-align: center;">
+                            <button class="btn btn-primary" style="padding: 0.8rem 2rem; font-size: 1.1rem;" onclick="submitAddEmployee()">
+                                <i class="fas fa-user-plus"></i> Tạo nhân viên
+                            </button>
+                        </div>
+                        <div id="addEmployeeMessage" style="margin-top: 1rem;"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Set default date
+            const defaultDate = new Date();
+            defaultDate.setFullYear(defaultDate.getFullYear() - 25);
+            document.getElementById('add_dob').valueAsDate = defaultDate;
+        }
+
+        // Open add employee modal
+        function openAddEmployeeModal() {
+            resetEmployeeForm();
+            document.getElementById('modalTitle').textContent = 'Thêm nhân viên mới';
+            document.getElementById('formMode').value = 'add';
+            document.getElementById('passwordField').style.display = 'block';
+            document.getElementById('emp_id').disabled = false;
+            document.getElementById('emp_id').required = true;
+            document.getElementById('oracle_password').required = true;
+            showModal(employeeModal);
+        }
+
+        // Edit employee
+        function editEmployee(empId) {
+            const employee = employees.find(e => e.EMP_ID == empId);
+            if (!employee) return;
+
+            // Set modal to edit mode
+            document.getElementById('modalTitle').textContent = 'Sửa thông tin nhân viên';
+            document.getElementById('formMode').value = 'edit';
+            document.getElementById('currentEmpId').value = empId;
+            
+            // Fill form
+            document.getElementById('emp_id').value = employee.EMP_ID;
+            document.getElementById('emp_id').disabled = true; // KHÓA mã NV khi sửa
+            document.getElementById('full_name').value = employee.FULL_NAME;
+            document.getElementById('dob').value = employee.DOB ? employee.DOB.substring(0, 10) : '';
+            document.getElementById('email').value = employee.EMAIL;
+            document.getElementById('dept').value = employee.DEPT_ID;
+            document.getElementById('salary').value = employee.SALARY;
+            document.getElementById('tax_code').value = employee.TAX_CODE;
+            
+            // Hide password field for edit (not required)
+            document.getElementById('passwordField').style.display = 'none';
+            document.getElementById('oracle_password').required = false;
+            
+            showModal(employeeModal);
+        }
+
+        // Reset employee form
+        function resetEmployeeForm() {
+            document.getElementById('employeeForm').reset();
+            document.getElementById('emp_id').disabled = false;
+            document.getElementById('emp_id').required = true;
+            document.getElementById('passwordField').style.display = 'block';
+            document.getElementById('oracle_password').required = true;
+            document.getElementById('formMode').value = 'add';
+            document.getElementById('currentEmpId').value = '';
+            // Set default date to 25 years ago
+            const defaultDate = new Date();
+            defaultDate.setFullYear(defaultDate.getFullYear() - 25);
+            document.getElementById('dob').valueAsDate = defaultDate;
+        }
+
+        // Submit add employee form (from add page)
+        async function submitAddEmployee() {
+            const emp_id = document.getElementById('add_emp_id').value;
+            const full_name = document.getElementById('add_full_name').value;
+            const dob = document.getElementById('add_dob').value;
+            const email = document.getElementById('add_email').value;
+            const dept = document.getElementById('add_dept').value;
+            const salary = document.getElementById('add_salary').value;
+            const tax_code = document.getElementById('add_tax_code').value;
+            const oracle_password = document.getElementById('add_oracle_password').value;
+
+            // Validation
+            if (!emp_id || !full_name || !dob || !email || !dept || !salary || !tax_code || !oracle_password) {
+                showMessage('Vui lòng điền đầy đủ thông tin', 'error');
+                return;
+            }
+
+            if (emp_id < 100 || emp_id > 999) {
+                showMessage('Mã nhân viên phải có 3 chữ số (100-999)', 'error');
+                return;
+            }
+
+            if (oracle_password.length < 8) {
+                showMessage('Mật khẩu phải có ít nhất 8 ký tự', 'error');
+                return;
+            }
+
+            const employeeData = {
+                emp_id,
+                full_name,
+                dob,
+                email,
+                dept,
+                salary,
+                tax_code,
+                oracle_password
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/employees/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'username': currentUser.username,
+                        'password': currentUser.password
+                    },
+                    body: JSON.stringify(employeeData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`✅ Đã tạo nhân viên thành công! Tài khoản Oracle: ${data.oracle_user}`, 'success');
+                    // Clear form
+                    document.getElementById('addEmployeeForm').reset();
+                    // Reload employees
+                    loadEmployees();
+                    // Switch to dashboard
+                    switchPage('dashboard');
+                } else {
+                    showMessage(`❌ Lỗi: ${data.error || data.message}`, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Không thể kết nối đến server', 'error');
+            }
+        }
+
+        // Delete employee
+        function deleteEmployee(empId, empName) {
+            employeeToDelete = { id: empId, name: empName };
+            document.getElementById('deleteEmpName').textContent = empName;
+            showModal(deleteModal);
+        }
+
+        // Save employee (add or edit from modal)
+        async function saveEmployee() {
+            const mode = document.getElementById('formMode').value;
+            const empIdInput = document.getElementById('emp_id');
+            
+            // Validate
+            if (!validateEmployeeForm()) {
+                return;
+            }
+
+            const employeeData = {
+                full_name: document.getElementById('full_name').value,
+                dob: document.getElementById('dob').value,
+                email: document.getElementById('email').value,
+                dept_id: document.getElementById('dept').value,
+                salary: document.getElementById('salary').value,
+                tax_code: document.getElementById('tax_code').value
+            };
+
+            if (mode === 'add') {
+                employeeData.emp_id = empIdInput.value;
+                employeeData.oracle_password = document.getElementById('oracle_password').value;
+                employeeData.dept = employeeData.dept_id;
+                
+                // Call create endpoint
+                try {
+                    const response = await fetch(`${API_BASE}/employees/create`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'username': currentUser.username,
+                            'password': currentUser.password
+                        },
+                        body: JSON.stringify(employeeData)
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        showAlert('✅ Đã tạo nhân viên thành công!', 'success');
+                        hideModal(employeeModal);
+                        loadEmployees();
+                    } else {
+                        showAlert(`❌ Lỗi: ${data.error || data.message}`, 'error');
+                    }
+                } catch (error) {
+                    showAlert('❌ Không thể kết nối đến server', 'error');
+                }
+            } else {
+                // Call update endpoint
+                const empId = document.getElementById('currentEmpId').value;
+                try {
+                    const response = await fetch(`${API_BASE}/employees/${empId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'username': currentUser.username,
+                            'password': currentUser.password
+                        },
+                        body: JSON.stringify(employeeData)
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        showAlert('✅ Đã cập nhật nhân viên thành công!', 'success');
+                        hideModal(employeeModal);
+                        loadEmployees();
+                    } else {
+                        showAlert(`❌ Lỗi: ${data.error || data.message}`, 'error');
+                    }
+                } catch (error) {
+                    showAlert('❌ Không thể kết nối đến server', 'error');
+                }
+            }
+        }
+
+        // Validate employee form
+        function validateEmployeeForm() {
+            const empId = document.getElementById('emp_id').value;
+            const fullName = document.getElementById('full_name').value;
+            const dob = document.getElementById('dob').value;
+            const email = document.getElementById('email').value;
+            const dept = document.getElementById('dept').value;
+            const salary = document.getElementById('salary').value;
+            const taxCode = document.getElementById('tax_code').value;
+            const mode = document.getElementById('formMode').value;
+
+            // Basic validation
+            if (!fullName || !dob || !email || !dept || !salary || !taxCode) {
+                showAlert('Vui lòng điền đầy đủ thông tin', 'error');
+                return false;
+            }
+
+            // For add mode, validate emp_id
+            if (mode === 'add') {
+                if (!empId || empId < 100 || empId > 999) {
+                    showAlert('Mã nhân viên phải có 3 chữ số (100-999)', 'error');
+                    return false;
+                }
+                
+                const oraclePassword = document.getElementById('oracle_password').value;
+                if (!oraclePassword || oraclePassword.length < 3) {
+                    showAlert('Mật khẩu Oracle phải có ít nhất 3 ký tự', 'error');
+                    return false;
+                }
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showAlert('Email không hợp lệ', 'error');
+                return false;
+            }
+
+            // Salary validation
+            if (salary < 0) {
+                showAlert('Lương không được âm', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Confirm delete
+        async function confirmDelete() {
+            if (!employeeToDelete) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/employees/${employeeToDelete.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'username': currentUser.username,
+                        'password': currentUser.password
+                    }
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showAlert('✅ Đã xóa nhân viên thành công!', 'success');
+                    hideModal(deleteModal);
+                    loadEmployees();
+                } else {
+                    showAlert(`❌ Lỗi: ${data.error || data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Không thể kết nối đến server', 'error');
+            } finally {
+                employeeToDelete = null;
+            }
+        }
+
+        // Show update manager modal
+        async function showUpdateManagerModal() {
+            // Load departments if not loaded
+            if (departments.length === 0) {
+                await loadDepartments();
+            }
+            
+            // Load employees if not loaded
+            if (employees.length === 0) {
+                await loadEmployees();
+            }
+            
+            // Populate department select
+            const deptSelect = document.getElementById('deptSelect');
+            deptSelect.innerHTML = '<option value="">Chọn phòng ban...</option>';
+            
+            departments.forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept.DEPT_ID;
+                option.textContent = `${dept.DEPT_ID} - ${dept.DEPT_NAME || dept.DEPT_ID}`;
+                deptSelect.appendChild(option);
+            });
+            
+            // Populate manager select
+            const managerSelect = document.getElementById('managerSelect');
+            managerSelect.innerHTML = '<option value="">Chọn nhân viên...</option>';
+            
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.EMP_ID;
+                option.textContent = `${emp.EMP_ID} - ${emp.FULL_NAME} (${emp.DEPT_ID})`;
+                managerSelect.appendChild(option);
+            });
+            
+            showModal(managerModal);
+        }
+
+        // Update manager
+        async function updateManager() {
+            const deptId = document.getElementById('deptSelect').value;
+            const managerId = document.getElementById('managerSelect').value;
+
+            if (!deptId || !managerId) {
+                showAlert('Vui lòng chọn phòng ban và trưởng phòng', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/departments/${deptId}/manager`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'username': currentUser.username,
+                        'password': currentUser.password
+                    },
+                    body: JSON.stringify({ new_manager_id: managerId })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showAlert('✅ Đã cập nhật trưởng phòng thành công!', 'success');
+                    hideModal(managerModal);
+                    // Reload departments to show updated data
+                    loadDepartments();
+                } else {
+                    showAlert(`❌ Lỗi: ${data.error || data.message}`, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Không thể kết nối đến server', 'error');
+            }
+        }
+
+        // Search functionality
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            if (!searchTerm) {
+                renderEmployees(employees);
+                return;
+            }
+
+            const filtered = employees.filter(emp => 
+                emp.FULL_NAME.toLowerCase().includes(searchTerm) ||
+                emp.EMAIL.toLowerCase().includes(searchTerm) ||
+                emp.EMP_ID.toString().includes(searchTerm) ||
+                emp.DEPT_ID.toLowerCase().includes(searchTerm) ||
+                (emp.TAX_CODE && emp.TAX_CODE.toLowerCase().includes(searchTerm))
+            );
+
+            renderEmployees(filtered);
+        }
+
+        // Utility functions
+        function showModal(modal) {
+            modal.style.display = 'flex';
+        }
+
+        function hideModal(modal) {
+            modal.style.display = 'none';
+        }
+
+        function showError(message) {
+            loginError.textContent = message;
+            loginError.style.display = 'block';
+            setTimeout(() => {
+                loginError.style.display = 'none';
+            }, 5000);
+        }
+
+        function showAlert(message, type = 'info') {
+            // Create alert element
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            // Add to top of main content
+            const mainContent = document.querySelector('.main-content');
+            mainContent.insertBefore(alert, mainContent.firstChild);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('addEmployeeMessage');
+            messageDiv.innerHTML = `
+                <div class="alert alert-${type}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    ${message}
+                </div>
+            `;
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        // Enter key for login
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+
+        // Enter key for search
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        // Initialize
+        window.onload = function() {
+            // Set default date for dob field
+            const defaultDate = new Date();
+            defaultDate.setFullYear(defaultDate.getFullYear() - 25);
+            
+            // Focus on username field
+            usernameInput.focus();
+        };
+    </script>
 </body>
 </html>

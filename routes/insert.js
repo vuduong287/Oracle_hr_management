@@ -35,20 +35,6 @@ function getUserLabelsByDept(dept) {
 }
 
 
-function normalizeUsername(fullName, empId) {
-  const noAccent = fullName
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D');
-
-  const clean = noAccent
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
-
-  return `${clean}_${empId}`;
-}
-
 /* ===============================
    CREATE EMPLOYEE + CREATE USER
 ================================ */
@@ -81,7 +67,7 @@ router.post('/create', async (req, res) => {
     return res.status(400).json({ message: 'Missing parameters' });
   }
 
-  const oracle_username = normalizeUsername(full_name, emp_id);
+  const oracle_username = 'N5_' + emp_id;
 
   try {
     /* ===============================
