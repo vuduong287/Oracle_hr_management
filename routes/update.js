@@ -118,7 +118,7 @@ router.put('/:emp_id', async (req, res) => {
     /* =================================================
        (3) UPDATE TẤT CẢ FIELD
     ================================================= */
-    await userConn.execute(
+     const updateResult = await userConn.execute(
       `
       UPDATE hr_n5.employees
       SET
@@ -141,11 +141,17 @@ router.put('/:emp_id', async (req, res) => {
       },
       { autoCommit: true }
     );
-
+    if (updateResult.rowsAffected !== 1) {
+      return res.status(400).json({
+        message: 'Update failed – no row was updated'
+      });
+    }
     /* =================================================
        (4) CHỈ KHI ĐỔI DEPT → GÁN LẠI USER LABEL
     ================================================= */
-    if (dept_id && dept_id !== oldDept) {
+    if (  updateResult.rowsAffected === 1 &&
+        dept_id &&
+        dept_id !== oldDept) {
 
       const oracleUser = normalizeUsername(oldName, emp_id);
       const labels = getUserLabelsByDept(dept_id);
