@@ -1,7 +1,7 @@
 // routes/insert.js
 const express = require('express');
 const router = express.Router();
-const { getAdminConnection } = require('../db/oracleAdmin');
+const {getHRADMINConnection,getHRN5Connection } = require('../db/oracleAdmin');
 /* ===============================
    HELPER FUNCTIONS
 ================================ */
@@ -54,8 +54,8 @@ function normalizeUsername(fullName, empId) {
 ================================ */
 router.post('/create', async (req, res) => {
   const userConn = req.db;   // user đang login
-  let adminConn;             // HR_N5
-
+  let OLSConn;             // HR_ADMIN
+  let HRN5Conn;           // HR_N5
   const {
     emp_id,
     full_name,
@@ -118,23 +118,23 @@ router.post('/create', async (req, res) => {
     /* ===============================
        (2) CREATE ORACLE USER (HR_N5)
     =============================== */
-    adminConn = await getAdminConnection();
+    HRN5Conn = await getHRN5Connection();
 
-    await adminConn.execute(
-      `CREATE USER ${oracle_username} IDENTIFIED BY "${oracle_password}"`
+    await HRN5Conn.execute(
+      `CREATE USER ${oracle_username} IDENTIFIED BY "${oracle_password}" PROFILE prof_10_min`
     );
 
-    await adminConn.execute(
+    await HRN5Conn.execute(
       `GRANT CREATE SESSION TO ${oracle_username}`
     );
 
-    await adminConn.execute(
+    await HRN5Conn.execute(
       `GRANT SELECT, INSERT ON hr_n5.employees TO ${oracle_username}`
     );
 
     const labels = getUserLabelsByDept(dept);
-
-    await adminConn.execute(
+    OLSConn = await getHRADMINConnection();
+    await OLSConn.execute(
       `
       BEGIN
         SA_USER_ADMIN.SET_USER_LABELS(
@@ -153,15 +153,8 @@ router.post('/create', async (req, res) => {
         min_write: labels.minWrite
       }
     );
-    await adminConn.execute(
-        `
-        CREATE USER ${oracle_username}
-        IDENTIFIED BY "${oracle_password}"
-        PROFILE prof_10_min
-        `
-        );
 
-    await adminConn.commit();
+    await OLSConn.commit();
 
     res.json({
       message: 'Employee created successfully',
@@ -178,10 +171,14 @@ router.post('/create', async (req, res) => {
       error: err.message
     });
   } finally {
-    if (adminConn) {
-      try { await adminConn.close(); } catch {}
-    }
+  if (OLSConn) {
+    try { await OLSConn.close(); } catch {}
   }
+  if (HRN5Conn) {
+    try { await HRN5Conn.close(); } catch {}
+  }
+  }
+
 });
 
 module.exports = router;

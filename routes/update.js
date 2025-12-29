@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAdminConnection } = require('../db/oracleAdmin');
+const {getHRADMINConnection,getHRN5Connection } = require('../db/oracleAdmin');
 
 /* =================================================
    USER LABEL mapping (đúng bộ bạn đang dùng)
@@ -59,8 +59,8 @@ function normalizeUsername(fullName, empId) {
 ================================================= */
 router.put('/:emp_id', async (req, res) => {
   const userConn = req.db;   // user đang login
-  
-  let adminConn;
+  let OLSConn;
+  let HRN5Conn;
 
   const emp_id = req.params.emp_id;
 
@@ -99,8 +99,8 @@ router.put('/:emp_id', async (req, res) => {
     /* =================================================
        (2) CHECK: NẾU ĐANG LÀ MANAGER → KHÔNG CHO UPDATE
     ================================================= */
-    adminConn = await getAdminConnection()
-    const mgrCheck = await adminConn.execute(
+    HRN5Conn = await getHRN5Connection();
+    const mgrCheck = await HRN5Conn.execute(
       `
       SELECT COUNT(*)
       FROM hr_n5.departments
@@ -157,8 +157,8 @@ router.put('/:emp_id', async (req, res) => {
       const labels = getUserLabelsByDept(dept_id);
 
     
-
-      await adminConn.execute(
+      OLSConn = await getHRADMINConnection();
+      await OLSConn.execute(
         `
         BEGIN
           SA_USER_ADMIN.SET_USER_LABELS(
@@ -178,7 +178,7 @@ router.put('/:emp_id', async (req, res) => {
         }
       );
 
-      await adminConn.commit();
+      await OLSConn.commit();
     }
 
     res.json({
@@ -194,10 +194,14 @@ router.put('/:emp_id', async (req, res) => {
       error: err.message
     });
   } finally {
-    if (adminConn) {
-      try { await adminConn.close(); } catch {}
-    }
+  if (OLSConn) {
+    try { await OLSConn.close(); } catch {}
   }
+  if (HRN5Conn) {
+    try { await HRN5Conn.close(); } catch {}
+  }
+}
+
 });
 
 module.exports = router;

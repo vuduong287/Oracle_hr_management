@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAdminConnection } = require('../db/oracleAdmin');
+const { getHRN5Connection } = require('../db/oracleAdmin');
 
 /* ===============================
    HELPER: normalize username
@@ -26,7 +26,7 @@ function normalizeUsername(fullName, empId) {
 ================================ */
 router.delete('/:emp_id', async (req, res) => {
   const userConn = req.db;   // user đang login (HR)
-  let adminConn;
+  let HRN5Conn;
 
   const emp_id = req.params.emp_id;
 
@@ -64,14 +64,14 @@ router.delete('/:emp_id', async (req, res) => {
     /* ===============================
        (3) DROP ORACLE USER (CASCADE)
     =============================== */
-    adminConn = await getAdminConnection();
+    HRN5Conn = await getHRN5Connection();
 
-    await adminConn.execute(
+    await HRN5Conn.execute(
       `DROP USER ${oracle_username} CASCADE`
     );
 
     // DDL auto-commit, commit thêm cho chắc
-    await adminConn.commit();
+    await HRN5Conn.commit();
 
     res.json({
       message: 'Employee and Oracle user deleted successfully',
@@ -86,8 +86,8 @@ router.delete('/:emp_id', async (req, res) => {
       error: err.message
     });
   } finally {
-    if (adminConn) {
-      try { await adminConn.close(); } catch {}
+    if (HRN5Conn) {
+      try { await HRN5Conn.close(); } catch {}
     }
   }
 });
