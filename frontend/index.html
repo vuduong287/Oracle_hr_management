@@ -1089,7 +1089,7 @@
                     <td><strong>${emp.EMP_ID}</strong></td>
                     <td>
                         <div class="employee-name">
-                            <div class="avatar-small">${emp.FULL_NAME.charAt(0)}</div>
+                            <div class="avatar-small">${(emp.FULL_NAME || '').charAt(0)}</div>
                             <div>
                                 <strong>${emp.FULL_NAME}</strong><br>
                                 <small>${emp.TAX_CODE || 'N/A'}</small>
