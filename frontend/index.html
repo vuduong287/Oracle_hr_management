@@ -1195,25 +1195,6 @@
                 `;
             });
             
-            html += `
-                        </tbody>
-                    </table>
-                </div>
-                <div class="table-container" style="margin-top: 2rem;">
-                    <div class="table-header">
-                        <h3>Thông tin OLS Labels</h3>
-                    </div>
-                    <div style="padding: 1.5rem;">
-                        <p>Hệ thống phân quyền Oracle Label Security (OLS):</p>
-                        <ul style="margin-top: 1rem; padding-left: 1.5rem;">
-                            <li><strong>Trưởng phòng HR:</strong> Có quyền đọc/ghi tất cả phòng ban</li>
-                            <li><strong>Nhân viên HR:</strong> Chỉ đọc được tất cả, ghi được IT & ACCT</li>
-                            <li><strong>Phòng IT:</strong> Chỉ xem và sửa dữ liệu IT</li>
-                            <li><strong>Phòng ACCT:</strong> Xem và sửa tất cả phòng ban</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
             
             content.innerHTML = html;
         }
