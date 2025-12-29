@@ -1,7 +1,7 @@
 // routes/insert.js
 const express = require('express');
 const router = express.Router();
-const {getHRADMINConnection,getHRN5Connection } = require('../db/oracleAdmin');
+const {getHRADMINConnection, getHRN5Connection  } = require('../db/oracleAdmin');
 /* ===============================
    HELPER FUNCTIONS
 ================================ */
@@ -111,7 +111,7 @@ router.post('/create', async (req, res) => {
         salary,
         tax_code
       },
-      { autoCommit: true }
+    
     );
 
 
@@ -129,7 +129,7 @@ router.post('/create', async (req, res) => {
     );
 
     await HRN5Conn.execute(
-      `GRANT SELECT, INSERT ON hr_n5.employees TO ${oracle_username}`
+      `GRANT SELECT, INSERT, UPDATE, DELETE ON hr_n5.employees TO ${oracle_username}`
     );
 
     const labels = getUserLabelsByDept(dept);
@@ -154,6 +154,8 @@ router.post('/create', async (req, res) => {
       }
     );
 
+    await userConn.commit();
+    await HRN5Conn.commit();
     await OLSConn.commit();
 
     res.json({
@@ -177,8 +179,6 @@ router.post('/create', async (req, res) => {
   if (HRN5Conn) {
     try { await HRN5Conn.close(); } catch {}
   }
-  }
-
-});
+ }});
 
 module.exports = router;

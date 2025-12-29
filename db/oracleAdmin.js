@@ -9,10 +9,10 @@ async function getHRN5Connection() {
 }
 async function getHRADMINConnection() {
   return await oracledb.getConnection({
-    user: 'HR_NADMIN',
+    user: 'HR_ADMIN',
     password: '123',
     connectString: 'localhost:1521/freepdb1'
   });
 }
 
-module.exports = { getAdminConnection };
+module.exports = { getHRADMINConnection, getHRN5Connection };

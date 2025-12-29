@@ -19,7 +19,6 @@
 <body>
 
 <h2>🔐 Oracle Login</h2>
-
 <div class="box">
   <input type="text" id="login_username" placeholder="Oracle username" /><br />
   <input type="password" id="login_password" placeholder="Oracle password" /><br />
@@ -27,24 +26,44 @@
   <div id="loginError" class="error"></div>
 </div>
 
-<!-- ================= UPDATE FORM ================= -->
-<h2>✏️ Update Employee</h2>
-
+<!-- ================= INSERT ================= -->
+<h2>➕ Create Employee</h2>
 <div class="box">
-  <input type="number" id="u_emp_id" placeholder="Employee ID" disabled /><br />
-  <input type="text" id="u_full_name" placeholder="Full name" /><br />
-  <input type="date" id="u_dob" /><br />
-  <input type="email" id="u_email" placeholder="Email" /><br />
+  <input type="number" id="c_emp_id" placeholder="Employee ID (3 digits)" /><br />
+  <input type="text" id="c_full_name" placeholder="Full name" /><br />
+  <input type="date" id="c_dob" /><br />
+  <input type="email" id="c_email" placeholder="Email" /><br />
 
-  <label>Department</label><br />
+  <select id="c_dept">
+    <option value="IT">IT</option>
+    <option value="HR">HR</option>
+    <option value="ACCT">ACCT</option>
+  </select><br />
+
+  <input type="number" id="c_salary" placeholder="Salary" /><br />
+  <input type="text" id="c_tax_code" placeholder="Tax code" /><br />
+  <input type="password" id="c_oracle_password" placeholder="Oracle password (new user)" /><br />
+
+  <button onclick="createEmployee()">Create Employee</button>
+  <div id="createMsg"></div>
+</div>
+
+<!-- ================= UPDATE ================= -->
+<h2>✏️ Update Employee</h2>
+<div class="box">
+  <input type="number" id="u_emp_id" disabled /><br />
+  <input type="text" id="u_full_name" /><br />
+  <input type="date" id="u_dob" /><br />
+  <input type="email" id="u_email" /><br />
+
   <select id="u_dept">
     <option value="IT">IT</option>
     <option value="HR">HR</option>
     <option value="ACCT">ACCT</option>
   </select><br />
 
-  <input type="number" id="u_salary" placeholder="Salary" /><br />
-  <input type="text" id="u_tax_code" placeholder="Tax code" /><br />
+  <input type="number" id="u_salary" /><br />
+  <input type="text" id="u_tax_code" /><br />
 
   <button onclick="updateEmployee()">Update Employee</button>
   <div id="updateMsg"></div>
@@ -72,66 +91,95 @@ let currentUser = null;
 
 /* ================= LOGIN ================= */
 async function login() {
-  const username = login_username.value;
-  const password = login_password.value;
-
-  loginError.innerText = '';
-  resultTable.style.display = 'none';
-
   try {
     const res = await fetch(API_BASE, {
-      headers: { username, password }
+      headers: {
+        username: login_username.value,
+        password: login_password.value
+      }
     });
     if (!res.ok) throw new Error();
-
-    currentUser = { username, password };
-    const data = await res.json();
-    renderTable(data);
+    currentUser = {
+      username: login_username.value,
+      password: login_password.value
+    };
+    renderTable(await res.json());
   } catch {
     loginError.innerText = '❌ Đăng nhập Oracle thất bại';
   }
 }
 
-/* ================= RENDER TABLE ================= */
+/* ================= INSERT ================= */
+async function createEmployee() {
+  if (!currentUser) return alert('Login trước');
+
+  const body = {
+    emp_id: c_emp_id.value,
+    full_name: c_full_name.value,
+    dob: c_dob.value,
+    email: c_email.value,
+    dept: c_dept.value,
+    salary: c_salary.value,
+    tax_code: c_tax_code.value,
+    oracle_password: c_oracle_password.value
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        username: currentUser.username,
+        password: currentUser.password
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    createMsg.innerHTML = `<div class="success">✅ Created ${data.oracle_user}</div>`;
+    login();
+  } catch (e) {
+    createMsg.innerHTML = `<div class="error">❌ ${e.message}</div>`;
+  }
+}
+
+/* ================= TABLE ================= */
 function renderTable(rows) {
   const tbody = document.querySelector('#resultTable tbody');
   tbody.innerHTML = '';
-
   rows.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${r.EMP_ID}</td>
       <td>${r.FULL_NAME}</td>
-      <td>${r.DOB ? r.DOB.substring(0,10) : ''}</td>
+      <td>${r.DOB?.substring(0,10) || ''}</td>
       <td>${r.EMAIL}</td>
       <td>${r.DEPT_ID}</td>
       <td>${r.SALARY}</td>
-      <td>${r.TAX_CODE}</td>
-    `;
+      <td>${r.TAX_CODE}</td>`;
     tr.onclick = () => fillForm(r);
     tbody.appendChild(tr);
   });
-
   resultTable.style.display = 'table';
 }
 
-/* ================= FILL FORM ================= */
+/* ================= FILL ================= */
 function fillForm(r) {
   u_emp_id.value = r.EMP_ID;
   u_full_name.value = r.FULL_NAME;
-  u_dob.value = r.DOB ? r.DOB.substring(0,10) : '';
+  u_dob.value = r.DOB?.substring(0,10) || '';
   u_email.value = r.EMAIL;
   u_dept.value = r.DEPT_ID;
   u_salary.value = r.SALARY;
   u_tax_code.value = r.TAX_CODE;
 }
 
-/* ================= UPDATE EMPLOYEE ================= */
+/* ================= UPDATE ================= */
 async function updateEmployee() {
-  if (!currentUser) return alert('Bạn cần login trước');
-
-  const empId = u_emp_id.value;
-  if (!empId) return alert('Chưa chọn nhân viên');
+  if (!currentUser) return alert('Login trước');
+  if (!u_emp_id.value) return alert('Chưa chọn nhân viên');
 
   const body = {
     full_name: u_full_name.value,
@@ -142,27 +190,21 @@ async function updateEmployee() {
     tax_code: u_tax_code.value
   };
 
-  try {
-    const res = await fetch(`${API_BASE}/${empId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        username: currentUser.username,
-        password: currentUser.password
-      },
-      body: JSON.stringify(body)
-    });
+  const res = await fetch(`${API_BASE}/${u_emp_id.value}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      username: currentUser.username,
+      password: currentUser.password
+    },
+    body: JSON.stringify(body)
+  });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+  updateMsg.innerHTML = res.ok
+    ? `<div class="success">✅ Update thành công</div>`
+    : `<div class="error">❌ Update thất bại</div>`;
 
-    updateMsg.innerHTML = `<div class="success">✅ Update thành công</div>`;
-    login(); // reload table
-
-  } catch (err) {
-    updateMsg.innerHTML =
-      `<div class="error">❌ ${err.message}</div>`;
-  }
+  login();
 }
 </script>
 
