@@ -1042,29 +1042,169 @@
         }
 
         // Logout handler
-        function handleLogout() {
-            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-                // Reset all data
-                currentUser = null;
-                employees = [];
-                departments = [];
-                
-                // Reset UI
-                usernameInput.value = '';
-                passwordInput.value = '';
-                currentUserSpan.textContent = 'Chưa đăng nhập';
-                userDeptSpan.textContent = 'Oracle User';
-                userAvatar.textContent = 'U';
-                
-                // Switch to login screen
-                appContainer.style.display = 'none';
-                loginScreen.style.display = 'flex';
-                
-                // Clear any alerts
-                const alerts = document.querySelectorAll('.alert');
-                alerts.forEach(alert => alert.remove());
+
+        async function handleLogout() {
+        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+            try {
+            // Gọi API logout để đóng connection Oracle
+            const response = await fetch(`${API_BASE}/logout`, {
+                method: 'POST',
+                headers: {
+                'username': currentUser.username,
+                'password': currentUser.password
+                }
+            });
+
+            if (response.ok) {
+                console.log('Oracle connection closed successfully');
+            }
+            
+            // Cleanup local state
+            cleanupLocalState();
+            
+            // Switch to login screen
+            appContainer.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            
+            // Clear inputs
+            usernameInput.value = '';
+            passwordInput.value = '';
+            usernameInput.focus();
+            
+            // Show success message
+            showAlert('✅ Đã đăng xuất thành công!', 'success');
+            
+            } catch (error) {
+            console.error('Logout error:', error);
+            // Vẫn tiếp tục logout dù API có lỗi
+            appContainer.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            showAlert('✅ Đã đăng xuất thành công!', 'success');
             }
         }
+        }
+
+        function cleanupLocalState() {
+        currentUser = null;
+        employees = [];
+        departments = [];
+        employeeToDelete = null;
+        
+        // Reset UI
+        currentUserSpan.textContent = 'Chưa đăng nhập';
+        userDeptSpan.textContent = 'Oracle User';
+        userAvatar.textContent = 'U';
+        searchInput.value = '';
+        totalEmployees.textContent = '0';
+        totalDepartments.textContent = '0';
+        
+        // Reset table
+        if (employeesTableBody) {
+            employeesTableBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem;">
+                <i class="fas fa-users-slash" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                <p>Không có nhân viên nào</p>
+                </td>
+            </tr>
+            `;
+        }
+        }
+
+        // Hàm cleanup local state
+        function cleanupLocalState() {
+            // Reset all data
+            currentUser = null;
+            employees = [];
+            departments = [];
+            employeeToDelete = null;
+            
+            // Reset UI elements
+            currentUserSpan.textContent = 'Chưa đăng nhập';
+            userDeptSpan.textContent = 'Oracle User';
+            userAvatar.textContent = 'U';
+            searchInput.value = '';
+            totalEmployees.textContent = '0';
+            totalDepartments.textContent = '0';
+            
+            // Reset employees table
+            if (employeesTableBody) {
+                employeesTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-users-slash" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                            <p>Không có nhân viên nào</p>
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // Reset navigation
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            // Set dashboard as active
+            const dashboardNav = document.querySelector('.nav-item[data-page="dashboard"]');
+            if (dashboardNav) {
+                dashboardNav.classList.add('active');
+            }
+            
+            // Reset page title and content
+            pageTitle.textContent = 'Dashboard';
+            Object.values(pages).forEach(pageEl => {
+                if (pageEl) {
+                    pageEl.style.display = 'none';
+                    if (pageEl !== pages.dashboard) {
+                        pageEl.innerHTML = '';
+                    }
+                }
+            });
+            // Show dashboard
+            if (pages.dashboard) {
+                pages.dashboard.style.display = 'block';
+            }
+            
+            // Hide loading indicators
+            if (loadingEmployees) {
+                loadingEmployees.style.display = 'none';
+            }
+            
+            // Show empty employees table
+            if (employeesTable) {
+                employeesTable.style.display = 'table';
+            }
+            
+            // Hide all modals
+            const allModals = document.querySelectorAll('.modal');
+            allModals.forEach(modal => {
+                modal.style.display = 'none';
+            });
+            
+            // Clear any alerts
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => alert.remove());
+            
+            // Clear form data
+            const allForms = document.querySelectorAll('form');
+            allForms.forEach(form => form.reset());
+            
+            // Clear any event listeners that might cause memory leaks
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            
+            console.log('Local state cleaned up successfully');
+        }
+
+        // Thêm event listener cho beforeunload
+        function handleBeforeUnload(e) {
+            if (currentUser) {
+                // Có thể gọi logout API khi đóng tab
+                navigator.sendBeacon(`${API_BASE}/logout`, JSON.stringify({
+                    username: currentUser.username,
+                    password: currentUser.password
+                }));
+            }
+        }
+
 
         // Load employees
         async function loadEmployees() {
@@ -2157,7 +2297,7 @@
                 handleSearch();
             }
         });
-
+        window.addEventListener('beforeunload', handleBeforeUnload);
         // Initialize
         window.onload = function() {
             // Set default date for dob field

@@ -11,22 +11,6 @@ function getEmpIdFromUsername(username) {
   return match ? Number(match[1]) : null;
 }
 
-/* ===============================
-   CHECK: HR MANAGER ONLY
-=============================== */
-async function isHRManager(conn, empId) {
-  const rs = await conn.execute(
-    `
-    SELECT 1
-    FROM hr_n5.departments
-    WHERE dept_id = 'HR'
-      AND manager_id = :id
-    `,
-    { id: empId }
-  );
-
-  return rs.rows.length === 1;
-}
 
 /* ===============================
    GET AUDIT LOGS
@@ -43,14 +27,6 @@ router.get('/', async (req, res) => {
     if (!empId) {
       return res.status(403).json({
         message: 'Invalid Oracle username format'
-      });
-    }
-
-    /* 2️⃣ CHECK HR MANAGER */
-    const allowed = await isHRManager(conn, empId);
-    if (!allowed) {
-      return res.status(403).json({
-        message: 'Access denied: HR Manager only'
       });
     }
 

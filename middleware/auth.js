@@ -11,10 +11,15 @@ async function oracleAuth(req, res, next) {
     const conn = await getConnection(username, password);
     req.db = conn;
     req.oracleUser = username;
+
     next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Oracle login failed' });
-  }
+    } catch (error) {
+        console.error('Oracle auth error:', error);
+        res.status(403).json({
+            message: 'Authentication failed',
+            error: error.message
+        });
+    }
 }
 
 module.exports = oracleAuth;

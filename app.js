@@ -10,7 +10,8 @@ const app = express();
 app.use(bodyParser.json());
 const cors = require('cors');
 const path = require('path');
-const auditRoutes = require('./routes/audit');
+const auditRoutes = require('./routes/audit');// Thêm route logout
+const logoutRoutes = require('./routes/logout');
 
 
 app.use(cors());
@@ -30,6 +31,7 @@ app.use('/api/employees', oracleAuth, deleteRoutes);
 app.use('/api/employees', oracleAuth, updateRoutes);
 app.use('/api/departments', oracleAuth, updatedeptmanagerRoutes);
 app.use('/api/audit', oracleAuth, auditRoutes);
+app.use('/api/logout', oracleAuth, logoutRoutes);
 app.listen(3000, () => {
   console.log('Server running on http://localhost:3000');
 });

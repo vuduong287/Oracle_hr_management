@@ -120,6 +120,15 @@ router.post('/create', async (req, res) => {
     await HRN5Conn.execute(
       `GRANT SELECT, UPDATE ON hr_n5.departments TO ${oracle_username}`
     );
+    await HRN5Conn.execute(
+      `GRANT SELECT ON hr_n5.FGA_EMP_DEL TO ${oracle_username}`
+    );
+     await HRN5Conn.execute(
+      `GRANT SELECT ON hr_n5.FGA_EMP_INS TO ${oracle_username}`
+    );
+     await HRN5Conn.execute(
+      `GRANT SELECT ON hr_n5.FGA_EMP_UPD TO ${oracle_username}`
+    );
     const labels = getUserLabelsByDept(dept);
     OLSConn = await getHRADMINConnection();
     await OLSConn.execute(
