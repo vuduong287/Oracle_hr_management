@@ -2209,7 +2209,9 @@
                 showAlert('❌ Không thể kết nối đến server', 'error');
             }
         }
-
+        function safeLower(v) {
+            return (v ?? '').toString().toLowerCase();
+        }
         // Search functionality
         function handleSearch() {
             const searchTerm = searchInput.value.toLowerCase().trim();
@@ -2217,13 +2219,14 @@
                 renderEmployees(employees);
                 return;
             }
+            
 
-            const filtered = employees.filter(emp => 
-                emp.FULL_NAME.toLowerCase().includes(searchTerm) ||
-                emp.EMAIL.toLowerCase().includes(searchTerm) ||
-                emp.EMP_ID.toString().includes(searchTerm) ||
-                emp.DEPT_ID.toLowerCase().includes(searchTerm) ||
-                (emp.TAX_CODE && emp.TAX_CODE.toLowerCase().includes(searchTerm))
+            const filtered = employees.filter(emp =>
+                safeLower(emp.FULL_NAME).includes(searchTerm) ||
+                safeLower(emp.EMAIL).includes(searchTerm) ||
+                safeLower(emp.EMP_ID).includes(searchTerm) ||
+                safeLower(emp.DEPT_ID).includes(searchTerm) ||
+                safeLower(emp.TAX_CODE).includes(searchTerm)
             );
 
             renderEmployees(filtered);
